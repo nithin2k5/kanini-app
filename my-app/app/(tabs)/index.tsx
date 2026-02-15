@@ -1,101 +1,128 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet, Button } from 'react-native';
+import { useState, useCallback } from 'react';
+import { View, FlatList, RefreshControl, Text, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { PatientCard, Patient } from '@/components/PatientCard';
+import { Stack } from 'expo-router';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+// Mock Data
+const INITIAL_PATIENTS: Patient[] = [
+  {
+    id: '10234',
+    name: 'Sarah Connor',
+    age: 42,
+    gender: 'F',
+    chiefComplaint: 'Severe chest pain radiating to the left arm, sweating, and shortness of breath.',
+    waitTime: '15m',
+    riskLevel: 'High',
+  },
+  {
+    id: '10235',
+    name: 'James Bond',
+    age: 38,
+    gender: 'M',
+    chiefComplaint: 'Laceration on right forearm, bleeding controlled. History of previous injury.',
+    waitTime: '45m',
+    riskLevel: 'Medium',
+  },
+  {
+    id: '10236',
+    name: 'Peter Parker',
+    age: 21,
+    gender: 'M',
+    chiefComplaint: 'Mild fever and sore throat for 2 days. No difficulty breathing.',
+    waitTime: '10m',
+    riskLevel: 'Low',
+  },
+  {
+    id: '10237',
+    name: 'Wanda Maximoff',
+    age: 29,
+    gender: 'F',
+    chiefComplaint: 'Migraine headache with visual aura and nausea. Sensitivity to light.',
+    waitTime: '1h 20m',
+    riskLevel: 'Medium',
+  },
+  {
+    id: '10238',
+    name: 'Bruce Banner',
+    age: 45,
+    gender: 'M',
+    chiefComplaint: 'Elevated heart rate and feeling of anxiety. No chest pain.',
+    waitTime: '5m',
+    riskLevel: 'High',
+  },
+  {
+    id: '10239',
+    name: 'Natasha Romanoff',
+    age: 34,
+    gender: 'F',
+    chiefComplaint: 'Sprained left ankle during exercise. Swelling and bruising present.',
+    waitTime: '30m',
+    riskLevel: 'Low',
+  },
+];
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const [patients, setPatients] = useState<Patient[]>(INITIAL_PATIENTS);
+  const [refreshing, setRefreshing] = useState(false);
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-      <Link href="/nativewind-test" asChild>
-        <Button title="Test NativeWind" />
-      </Link>
-    </ParallaxScrollView>
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    // Simulate network request
+    setTimeout(() => {
+      // Shuffle list to simulate update
+      setPatients([...patients].sort(() => Math.random() - 0.5));
+      setRefreshing(false);
+    }, 1500);
+  }, [patients]);
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FAFAFA' }} edges={['top']}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <View className="px-5 py-6 flex-1">
+        {/* Modern Header */}
+        <View className="mb-6 flex-row justify-between items-center">
+          <View>
+            <Text className="text-3xl font-extrabold text-gray-900 tracking-tight">Kairo</Text>
+            <View className="flex-row items-center mt-1">
+              <View className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse" />
+              <Text className="text-gray-500 font-medium text-sm">Live Triage • {patients.length} Waiting</Text>
+            </View>
+          </View>
+          <View className="bg-white p-2 rounded-full shadow-sm border border-gray-100">
+            {/* Profile Icon Placeholder */}
+            <View className="w-8 h-8 rounded-full bg-blue-100 items-center justify-center">
+              <Text className="text-blue-700 font-bold text-xs">JD</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Filter/Tabs Placeholder (Optional Polish) */}
+        <View className="flex-row mb-6 space-x-3">
+          <View className="bg-gray-900 px-4 py-2 rounded-full">
+            <Text className="text-white font-semibold text-xs">All Patients</Text>
+          </View>
+          <View className="bg-white border border-gray-200 px-4 py-2 rounded-full">
+            <Text className="text-gray-600 font-semibold text-xs">High Risk</Text>
+          </View>
+        </View>
+
+        <FlatList
+          data={patients}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <PatientCard patient={item} />}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#111827" />
+          }
+          ListEmptyComponent={
+            <View className="items-center justify-center py-20">
+              <Text className="text-gray-400">No patients in queue</Text>
+            </View>
+          }
+        />
+      </View>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
